@@ -25,5 +25,11 @@ s_2 = (-(1+K*kp)-sqrt((1+K*kp)^2-4*T*K*ki))/(2*T)
 
 %Stabilitätsreserven für Robustheit gegenüber der Totzeit
 step(H_s);
-[Gm, Pm, ~, ~] = margin(F_0)
+[Gm, Pm, ~, ~] = margin(F_0);
+
+%Diskretisierung des Reglers
+c2d(C_s, DT, 'tustin')
+
+
+
 
