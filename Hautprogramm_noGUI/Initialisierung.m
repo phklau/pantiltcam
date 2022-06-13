@@ -14,16 +14,16 @@ TEST = 0;
 %   webcamlist
 % abfragen.
 global cam;
-cam = webcam(1);
+cam = webcam(2);
 
 %% Arduino-Objekte generieren / bzw. eigenes Skript mit den Objekten
-
+%Arduino_Init;
 %% Default-Werte
 DEF_POS = 0.5; % Mitte des Bildschirms
 % MOUNTING = 180; % Montage: 0°: Boden, 180°, Decke
 
 % Abtastrate in s;
-DT = 0.05;
+DT = 0.3;
 
 % Laufzeitvariablen
 is_detected_ini = 0; % Flag, ob jemand erkannt wurde oder nicht
