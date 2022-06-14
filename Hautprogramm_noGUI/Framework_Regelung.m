@@ -50,7 +50,7 @@ while 1
         [out_img,is_detected,x_Filt,y_Filt] = vision.doPeopleDetection(detector,act_img,xact,yact,DEF_POS,VISION_TYP);
     end
     % Aktuelle Position - erster Wert
-    xact = x_Filt();
+    xact = x_Filt(1);
     yact = y_Filt(1);
     
     %% Drehung des Bildes abhängig von der Aufstellung
