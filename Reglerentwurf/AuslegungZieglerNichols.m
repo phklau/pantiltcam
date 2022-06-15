@@ -3,8 +3,9 @@
 %Prozessparameter
 K = 1.175;
 T = 0.091;
-DT = 0.2;
-T_t = DT/2; %Mindeste Totzeit, durch diskrete Abtastung
+DT = 0.3;
+%T_t = DT/2; %Mindeste Totzeit, durch diskrete Abtastung
+T_t = 2*DT; %Erfahrungswert aus Sprungantwort
 %Prozess
 P_s = tf([K], [T 1]);
 
