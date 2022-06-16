@@ -19,7 +19,9 @@ XY_WEIGHT = 'none';
 % Gewichtung der Ausgabewerte
 % 'none': Keine Filterung
 % 'mean': Mittelwertfilterung
-OUTPUT_FILT = 'mean';
+%OUTPUT_FILT = 'mean';
+OUTPUT_FILT = 'hold';
+
 
 % Konstanten für die Offsetverschiebung der detektierten Objektposition
 % Bezug: links oben, normiert
@@ -106,12 +108,21 @@ end
 % Var 1: Aktuellster Wert
 switch OUTPUT_FILT
     case 'none'
-        xbox_filt = xact;
-        ybox_filt = yact;
+        xbox_filt = xact(1);
+        ybox_filt = yact(1);
     case 'mean'
         % Var 2: Mittelwert
         xbox_filt = mean(xact);
         ybox_filt = mean(yact);
+    case 'hold'
+           %Hold Filter 
+       if person_detected
+           xbox_filt = xact(1);
+           ybox_filt = yact(1);
+       else
+           xbox_filt = xact(2);
+           ybox_filt = yact(2);
+       end
 end
 
 %% Rechteck einfügen - Bezug links oben

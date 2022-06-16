@@ -26,25 +26,27 @@ pan_mid=0.5;
 writePosition(pan, pan_mid);
 writePosition(tilt, ti_mid);
 %Fehler und Ausgangsarrays
-e_pan = zeros(2,1);
-u_pan = zeros(2,1);
-u_pan(1) = DEF_POS;
+e_pan = zeros(3,1);
+u_pan = zeros(3,1);
+u_pan(:,1) = pan_mid;
 e_tilt = zeros(2,1);
 u_tilt = zeros(2,1);
-u_tilt(1) = DEF_POS;
-xact = zeros(2,1);
-yact = zeros(2,1);
-xact(1) = DEF_POS;
-yact(1) = DEF_POS;
-%yact(1) = 0.35;
+u_tilt(:,1) = ti_mid;
+y_pan = zeros(3,1);
+y_tilt = zeros(3,1);
+y_pan(:,1) = DEF_POS;
+y_tilt(:,1) = DEF_POS;
 %Reglerparameter abhängig von Abtastzeit
 [ki_pan, kp_pan] = getControllerParams('pan', DT);
 [ki_tilt, kp_tilt] = getControllerParams('tilt', DT);
 %kp_pan = 0.5;
 %kp_tilt = 0.25;
-%ki_pan= 2;
+ki_pan= ki_pan*2; %ToDO: ki richtig bestimmen -> erhöht "Dynamik"
 %ki_tilt = 1;
 
+lastValid = DEF_POS;
+%% Stabilisation
+% ToDo:Mehrere Durchläufe ohne Regelung für richtige Werte in Arrays
 
 %% Endlosschleife
 % preview(cam)
@@ -63,9 +65,15 @@ while 1
         act_img = imread('Mann2.jpg');
         [out_img,is_detected,x_Filt,y_Filt] = vision.doPeopleDetection(detector,act_img,xact,yact,DEF_POS,VISION_TYP);
     end
-    % Aktuelle Position - erster Wert
-    xact(1) = x_Filt(1)
-    yact(1) = y_Filt(1)
+%    %Hold Filter Test
+%    if is_detected
+%        lastValid = x_Filt;
+%    else
+%        x_Filt = lastValid;
+%    end
+    % Aktuelle Position
+    y_pan(1) = x_Filt
+    y_tilt(1) = 1-y_Filt %ToDo: Richtig Montage
     
     %% Drehung des Bildes abhängig von der Aufstellung
     switch MOUNTING
@@ -81,14 +89,14 @@ while 1
      % Pan-Regler:
         %Fehler
         e_pan(2) = e_pan(1);
-        e_pan(1) = DEF_POS - xact(1);
+        e_pan(1) = DEF_POS - y_pan(1);
         u_pan(2) = u_pan(1);
         
         %Ausgangswert durch Differenzengleichung berechnen(PI)
         %u_pan_unSaturation = u_pan(2) + (kp_pan+0.5*ki_pan*DT)*e_pan(1) + (0.5*ki_pan*DT-kp_pan)*e_pan(2);
         %PI 2DOF
         integralPart = DT*ki_pan*0.5*(e_pan(1)+e_pan(2));
-        propPart = kp_pan*(yact(2) - yact(1));
+        propPart = kp_pan*(y_pan(2) - y_pan(1));
         %Saturation
         u_pan_unSaturation = u_pan(2) +integralPart + propPart;
         u_pan(1) = min(1, (max(0, u_pan_unSaturation)));
@@ -96,19 +104,19 @@ while 1
     % Tilt-Regler(PI):
         %Fehler
         e_tilt(2) = e_tilt(1);
-        e_tilt(1) = DEF_POS - yact(1);
+        e_tilt(1) = DEF_POS - y_tilt(1); 
         u_tilt(2) = u_tilt(1);
         %Ausgangswert durch Differenzengleichung berechnen
         %u_tilt_unSaturation = u_pan(2) + (kp_tilt+0.5*ki_tilt*DT)*e_tilt(1) + (0.5*ki_tilt*DT-kp_tilt)*e_tilt(2);
         %PI 2DOF
         integralPart = DT*ki_tilt*0.5*(e_tilt(1)+e_tilt(2));
-        propPart = kp_tilt*(yact(2)-yact(1));
+        propPart = kp_tilt*(y_tilt(2)-y_tilt(1));
         %Saturation
         u_tilt_unSaturation = u_tilt(2) +integralPart + propPart;
         u_tilt(1) = min(1, max(0,u_tilt_unSaturation));
 
-        xact(2) = xact(1);
-        yact(2) = yact(1);
+        y_pan(2) = y_pan(1);
+        y_tilt(2) = y_tilt(1);
     %
     %% Ausgänge setzen
     % Bitte hier die Ausgänge für die Servomotoren setzen
@@ -121,7 +129,7 @@ while 1
         u_tilt
         u_pan
         writePosition(pan, u_pan(1));
-        writePosition(tilt, 1-u_tilt(1));
+        writePosition(tilt, u_tilt(1));
 
     %    
     %% Bild im Player aktualisieren

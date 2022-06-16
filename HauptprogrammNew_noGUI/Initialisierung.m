@@ -43,6 +43,9 @@ N_FILT = 4;
 % Filter initialisieren
 xact = zeros(N_FILT,1);
 yact = zeros(N_FILT,1);
+xact(:,1) = DEF_POS;
+yact(:,1) = DEF_POS;
+
 
 % Bilderkennungsmethode - PeopleDetector mit Oberkörpererkennung
 % Empfehlung: peopleACF - cascade
