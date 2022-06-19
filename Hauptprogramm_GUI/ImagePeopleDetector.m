@@ -6,10 +6,10 @@ classdef ImagePeopleDetector
     properties (Access = private)
         Detector
         VisionType
-        FiltLength
+        filterType = 'hold';
         Xact
         Yact
-        defPos_pan %Rückgabewert, fall keine Person erkannt
+        defPos_pan %Rückgabewert, fall keine Person erkannt = ReglerSollwert (für Mittelwertfilter relevant)
         defPos_tilt
     end
 
@@ -24,7 +24,7 @@ classdef ImagePeopleDetector
         % Gewichtung der Ausgabewerte
         % 'none': Keine Filterung
         % 'mean': Mittelwertfilterung
-        OUTPUT_FILT = 'mean';
+        filtLength = '4';
         % Konstanten für die Offsetverschiebung der detektierten Objektposition
         % Bezug: links oben, normiert
         % Typ CascadeDetection
@@ -37,7 +37,7 @@ classdef ImagePeopleDetector
     end
     
     methods (Access = public)
-        function obj = ImagePeopleDetector(visionType, filterLength)
+        function obj = ImagePeopleDetector(visionType, filterType)
             %Konstruktor
             switch visionType
                 % Erkennt Gesichter/Oberkörper gut: Rückgabe ist eher das Gesicht
@@ -53,13 +53,14 @@ classdef ImagePeopleDetector
                     obj.Detector = peopleDetectorACF;
             end
             %Filter Initalisieren
+            obj.filterType = filterType;
             obj.Xact = zeros(filterLength,1);
             obj.Yact = zeros(filterLength,1);
             obj.Xact(:,1) = obj.defPos_pan;
             obj.Yact(:,1) = obj.defPos_tilt;
         end
         
-        function [image_out,person_detected,xact_filt,yact_filt] = ...
+        function [image_out,person_detected, xact_filt, yact_filt] = ...
             doPeopleDetection(obj,img)
             %Bilderkennung ausführen
             %% Bild holen
@@ -88,7 +89,7 @@ classdef ImagePeopleDetector
                 % Zielpunkt: Brust
                 % Das Positionsergebnis aus der Bilderkennung wird um einen
                 % spezifischen Offset verschoben.
-                switch VISION_TYP
+                switch app.VisionType
                     case 'cascade'
                         % Hier wird eher das Gesicht erkannt -> Mitte der unteren Kante
                         bbox_off(:,1) = (bbox(1,1)) + bbox(1,3) * obj.SC_X_CASCADE;
@@ -124,9 +125,24 @@ classdef ImagePeopleDetector
                 person_detected = 1;
             end
             %% Filterung der Werte
-             % Mittelwertbildung
+            switch OUTPUT_FILT
+            case 'none'
+                xact_filt = xact(1);
+                yact_filt = yact(1);
+            case 'mean'
+                % Var 2: Mittelwert
                 xact_filt = mean(obj.Xact);
                 yact_filt = mean(obj.Yact);
+            case 'hold'
+                   %Hold Filter 
+               if person_detected
+                   xact_filt = obj.Xact(1);
+                   yact_filt = obj.Yact(1);
+               else
+                   xact_filt = obj.Xact(2);
+                   yact_filt = obj.Yact(2);
+               end
+            end
             %% Rechteck einfügen - Bezug links oben
             x_actbox = xact_filt - 0.05*img_height;
             y_actbox = img_height - yact_filt - 0.05*img_height;
