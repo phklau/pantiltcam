@@ -19,8 +19,8 @@ XY_WEIGHT = 'none';
 % Gewichtung der Ausgabewerte
 % 'none': Keine Filterung
 % 'mean': Mittelwertfilterung
-%OUTPUT_FILT = 'mean';
-OUTPUT_FILT = 'hold';
+OUTPUT_FILT = 'mean';
+%OUTPUT_FILT = 'hold';
 
 
 % Konstanten für die Offsetverschiebung der detektierten Objektposition

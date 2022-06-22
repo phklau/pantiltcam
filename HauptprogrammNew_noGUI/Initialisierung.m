@@ -15,6 +15,7 @@ TEST = 0;
 %   res.DeviceIDs -> alle verfügbaren IDs
 %   res.DeviceInfo.DeviceName -> Namen der Kameras -> FC-85B auswählen
 %   Bei mir ist es die Nummer zwei
+imaqreset;
 res = imaqhwinfo('winvideo');
 allcams = {res.DeviceInfo.DeviceName};
 %cam_idx = find(contains(allcams,'Integrated Camera'));
@@ -39,7 +40,7 @@ person_detected = 0;
 
 
 % Filterlänge Objekterkennung
-N_FILT = 4;
+N_FILT = 3;
 % Filter initialisieren
 xact = zeros(N_FILT,1);
 yact = zeros(N_FILT,1);
