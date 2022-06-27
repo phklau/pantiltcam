@@ -1,7 +1,7 @@
 classdef Controller
     %Klasse für Regler
     
-    properties
+    properties (Access = private)
         e = zeros(3,1);   %Regelfehler
         u = zeros(3,1);  %Stellgröße
         y = zeros(3,1);  %Instgröße
@@ -13,7 +13,7 @@ classdef Controller
         type = 'PI';
     end
     
-    methods
+    methods (Access = public)
         function obj = Controller(type, K, T, sampleTime, servoMid)
             %Konstruktor -> Regelparmas initalisieren, Arrays beschreiben
             obj.type = type;

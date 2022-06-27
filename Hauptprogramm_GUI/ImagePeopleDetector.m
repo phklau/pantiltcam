@@ -7,10 +7,15 @@ classdef ImagePeopleDetector
         Detector
         VisionType
         filterType = 'hold';
-        Xact
-        Yact
+        %Eingangswerte für Filter
+        Xact_raw 
+        Yact_raw
+        %Ausgangswerte von Filter
+        Xact_filter
+        Yact_filter
         defPos_pan = 0.5; %Rückgabewert, fall keine Person erkannt = ReglerSollwert (für Mittelwertfilter relevant)
-        defPos_tilt = 0.35;  
+        defPos_tilt = 0.35; 
+        filtLength = 2; % mind. 3 für LoPass, mind 4 für FIR
     end
 
     properties (Constant)
@@ -24,7 +29,7 @@ classdef ImagePeopleDetector
         % Gewichtung der Ausgabewerte
         % 'none': Keine Filterung
         % 'mean': Mittelwertfilterung
-        filtLength = 4;
+        
         % Konstanten für die Offsetverschiebung der detektierten Objektposition
         % Bezug: links oben, normiert
         % Typ CascadeDetection
@@ -54,11 +59,21 @@ classdef ImagePeopleDetector
                     obj.Detector = peopleDetectorACF;
             end
             %Filter Initalisieren
+            switch filterType
+                case 'LowPass'
+                    obj.filtLength = 3;
+                case 'FIR'
+                    obj.filtLength = 4;
+            end
             obj.filterType = filterType;
-            obj.Xact = zeros(obj.filtLength, 1);
-            obj.Yact = zeros(obj.filtLength, 1);
-            obj.Xact(:,1) = obj.defPos_pan;
-            obj.Yact(:,1) = obj.defPos_tilt;
+            obj.Xact_raw = zeros(obj.filtLength, 1);
+            obj.Yact_raw = zeros(obj.filtLength, 1);
+            obj.Xact_raw(:,1) = obj.defPos_pan;
+            obj.Yact_raw(:,1) = obj.defPos_tilt;
+            obj.Xact_filter = zeros(obj.filtLength, 1);
+            obj.Yact_filter = zeros(obj.filtLength, 1);
+            obj.Xact_filter(:,1) = obj.defPos_pan;
+            obj.Yact_filter(:,1) = obj.defPos_tilt;
         end
         
         function [image_out,person_detected, xact_filt, yact_filt] = ...
@@ -78,12 +93,14 @@ classdef ImagePeopleDetector
             end
             %% Filterung der Werte
             % Schieberegister
-            obj.Xact(2:end) = obj.Xact(1:end-1);
-            obj.Yact(2:end) = obj.Yact(1:end-1);
+            obj.Xact_raw(2:end) = obj.Xact_raw(1:end-1);
+            obj.Yact_raw(2:end) = obj.Yact_raw(1:end-1);
+            obj.Xact_filter(2:end) = obj.Xact_filter(1:end-1);
+            obj.Yact_filter(2:end) = obj.Yact_filter(1:end-1);
             
             if isempty(bbox) %Falls keine Person erkannt
-                obj.Xact(1) = obj.defPos_pan;
-                obj.Yact(1) = obj.defPos_tilt;
+                obj.Xact_raw(1) = obj.defPos_pan;
+                obj.Yact_raw(1) = obj.defPos_tilt;
                 person_detected = 0; 
             else %Falls doch
                 %% Offset-Verschiebung je nach Art der Bildverarbeitung
@@ -121,28 +138,40 @@ classdef ImagePeopleDetector
                 xbox = x_box_mean;
                 ybox = img_height - y_box_mean;
                 % Normierung
-                obj.Xact(1) = xbox / img_width;
-                obj.Yact(1) = ybox / img_height;
+                obj.Xact_raw(1) = xbox / img_width;
+                obj.Yact_raw(1) = ybox / img_height;
                 person_detected = 1;
             end
             %% Filterung der Werte
             switch obj.filterType
-            case 'none'
-                xact_filt = xact(1);
-                yact_filt = yact(1);
-            case 'mean'
-                % Var 2: Mittelwert
-                xact_filt = mean(obj.Xact);
-                yact_filt = mean(obj.Yact);
-            case 'hold'
-                   %Hold Filter 
-               if person_detected
-                   xact_filt = obj.Xact(1);
-                   yact_filt = obj.Yact(1);
-               else
-                   xact_filt = obj.Xact(2);
-                   yact_filt = obj.Yact(2);
-               end
+                case 'none'
+                    xact_filt = xact(1);
+                    yact_filt = yact(1);
+                case 'mean'
+                    % Var 2: Mittelwert
+                    xact_filt = mean(obj.Xact_raw);
+                    yact_filt = mean(obj.Yact_raw);
+                case 'hold'
+                       %Hold Filter 
+                   if person_detected
+                       xact_filt = obj.Xact_raw(1);
+                       yact_filt = obj.Yact_raw(1);
+                   else
+                       xact_filt = obj.Xact_raw(2);
+                       yact_filt = obj.Yact_raw(2);
+                   end
+                case 'LowPass'
+                    obj.Xact_filter(1) = obj.Xact_filter(3)*0.1919 + obj.Xact_filter(2)*0.2442 + obj.Xact_raw(3) + obj.Xact_raw(2) + obj.Xact_raw(1);
+                    obj.Xact_filter(1) = obj.Xact_filter(1)/4.45; %Gainkorrektur
+                    xact_filt = obj.Xact_filter(1);
+                    obj.Yact_filter(1) = obj.Yact_filter(3)*0.1919 + obj.Yact_filter(2)*0.2442 + obj.Yact_raw(3) + obj.Yact_raw(2) + obj.Yact_raw(1);
+                    obj.Yact_filter(1) = obj.Yact_filter(1)/4.45; %Gainkorrektur
+                    yact_filt = obj.Yact_filter(1);
+                case 'FIR'
+                    obj.Xact_filter(1) = 0.28399418430782136*obj.Xact_raw(2)+0.574008723538268*obj.Xact_raw(3)+0.28399418430782136*obj.Xact_raw(4);
+                    xact_filt = obj.Xact_filter(1);
+                    obj.Yact_filter(1) = 0.28399418430782136*obj.Yact_raw(2)+0.574008723538268*obj.Yact_raw(3)+0.28399418430782136*obj.Yact_raw(4);
+                    yact_filt = obj.Yact_filter(1);
             end
             %% Rechteck einfügen - Bezug links oben
             x_actbox = xact_filt - 0.05*img_height;
@@ -155,6 +184,7 @@ classdef ImagePeopleDetector
         
         function obj = updateDefValues(obj, xDef, yDef)
         %Neuer Reglersollwert
+            %evtl auch auf 0.5 lassen für LowPassFilter
             obj.defPos_pan = xDef;
             obj.defPos_tilt = yDef;
             %Filter löschen für weichen Start des Reglers?

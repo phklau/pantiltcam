@@ -123,6 +123,10 @@ switch OUTPUT_FILT
            xbox_filt = xact(2);
            ybox_filt = yact(2);
        end
+%     case 'LowPass'
+%             xbox_filt = 
+%             y(i) = y(i-2)*(6*Tf/T-1)/A +y(i-1)*(8*Tf/T-2)/A + u(i-2) + 2*u(i-1) + u(i);
+%             y(i) = y(i)/kor;
 end
 
 %% Rechteck einfügen - Bezug links oben

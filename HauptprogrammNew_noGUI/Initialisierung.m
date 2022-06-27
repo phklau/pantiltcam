@@ -18,8 +18,8 @@ TEST = 0;
 imaqreset;
 res = imaqhwinfo('winvideo');
 allcams = {res.DeviceInfo.DeviceName};
-%cam_idx = find(contains(allcams,'Integrated Camera'));
-cam_idx = find(contains(allcams,'FC-85B'));
+cam_idx = find(contains(allcams,'Integrated Camera'));
+%cam_idx = find(contains(allcams,'FC-85B'));
 vidobj = videoinput('winvideo',cam_idx);
 % Manueller Trigger für Grabbing - schnellste Variante
 triggerconfig(vidobj, 'manual');
@@ -40,7 +40,7 @@ person_detected = 0;
 
 
 % Filterlänge Objekterkennung
-N_FILT = 3;
+N_FILT = 4; %mind. 3 für LowPassFilter, 4 für FIR
 % Filter initialisieren
 xact = zeros(N_FILT,1);
 yact = zeros(N_FILT,1);

@@ -25,7 +25,7 @@ pan=servo(a,'D2');
 tilt=servo(a,'D3');
 writePosition(pan, 0.5);
 writePosition(tilt, 0.4);
-sampels = 13; % sampels*DT = Laufzeit
+sampels = 40; % sampels*DT = Laufzeit
 stabi = 200;
 sprung = zeros(sampels, 2);
 switch servo_name

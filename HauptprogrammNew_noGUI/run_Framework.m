@@ -3,9 +3,9 @@
 %   Prof. Dr.-Ing. Tobias Weiser
 %   HS Kempten
 %   21.05.2022
-clc; clear all;
-close all; objects = imaqfind %find video input objects in memory
-delete(objects) %delete a video input object from memory
+clc; clear;
+imaqreset;
 MOUNTING = 0;
 %Sprung_Aufzeichnung(MOUNTING,0.35,0.3,'pan')
-Framework_Regelung(MOUNTING);
+Sprung_Aufzeichnung_Filter(MOUNTING, 0.35, 0.3, 'pan', 'none'); %Filter none lässt verschiedene Filter auch noch im Nachgang probieren!
+%Framework_Regelung(MOUNTING);
