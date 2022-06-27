@@ -18,8 +18,8 @@ TEST = 0;
 imaqreset;
 res = imaqhwinfo('winvideo');
 allcams = {res.DeviceInfo.DeviceName};
-cam_idx = find(contains(allcams,'Integrated Camera'));
-%cam_idx = find(contains(allcams,'FC-85B'));
+%cam_idx = find(contains(allcams,'Integrated Camera'));
+cam_idx = find(contains(allcams,'FC-85B'));
 vidobj = videoinput('winvideo',cam_idx);
 % Manueller Trigger für Grabbing - schnellste Variante
 triggerconfig(vidobj, 'manual');

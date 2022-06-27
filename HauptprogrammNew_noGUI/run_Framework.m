@@ -7,5 +7,5 @@ clc; clear;
 imaqreset;
 MOUNTING = 0;
 %Sprung_Aufzeichnung(MOUNTING,0.35,0.3,'pan')
-Sprung_Aufzeichnung_Filter(MOUNTING, 0.35, 0.3, 'pan', 'none'); %Filter none lässt verschiedene Filter auch noch im Nachgang probieren!
+Sprung_Aufzeichnung_Filter(MOUNTING, 0.45, 0.25, 'pan', 'hold'); %Filter none lässt verschiedene Filter auch noch im Nachgang probieren!
 %Framework_Regelung(MOUNTING);

@@ -1,7 +1,7 @@
-classdef Controller
+classdef Controller < handle
     %Klasse für Regler
     
-    properties (Access = private)
+    properties (Access = public)
         e = zeros(3,1);   %Regelfehler
         u = zeros(3,1);  %Stellgröße
         y = zeros(3,1);  %Instgröße
@@ -74,6 +74,14 @@ classdef Controller
             obj.e(:,1) = 0;
             obj.y(:,1) = defPos;
             obj.r(1) = defPos;
+        end
+        function obj = setParams(obj,param,type)
+            switch type
+                case 'ki'
+                    obj.ki = param;
+                case 'kp'
+                    obj.kp = param;
+            end
         end
     end
 end
