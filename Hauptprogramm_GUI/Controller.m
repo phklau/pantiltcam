@@ -1,6 +1,5 @@
 classdef Controller < handle
     %Klasse für Regler
-    
     properties (Access = public)
         e = zeros(3,1);   %Regelfehler
         u = zeros(3,1);  %Stellgröße
