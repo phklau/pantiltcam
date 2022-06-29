@@ -14,18 +14,18 @@ classdef Controller < handle
         antiWind = zeros(2,1);
     end
     
-    methods (Access = public)
+    methods (Access = private)
         function obj = Controller(K, T, sampleTime, servoMid)
             %Konstruktor -> Regelparmas initalisieren, Arrays beschreiben
             obj.sampleTime = sampleTime;
-            %get ControllerParams
+            %Default: Auslegung nach Ziegler-Nicols
             T_t = 2*sampleTime;
             obj.Tt = T_t;
             obj.kp = (0.9/K)*(T/T_t);
             obj.ki = obj.kp/(3.33*T_t);
             obj.kd = 0;  
             obj.u(:,1) = servoMid;
-            %update DesPos
+            %Default: Sollposition in Bildmitte
             obj.e(:,1) = 0;
             obj.y(:,1) = 0.5;
             obj.r(1) = 0.5;
@@ -48,7 +48,9 @@ classdef Controller < handle
             %Saturation
             u_unSaturation = obj.u(2) + integralPart + propPart;
             u_Saturation = min(1, (max(0, u_unSaturation)));
+            %Anti Windup berechnen für nächstes Sample
             obj.antiWind(1) = u_Saturation - u_unSaturation;
+            %Ausgang setzen
             obj.u(1) = u_Saturation;
             output = obj.u(1);
         end
@@ -58,13 +60,16 @@ classdef Controller < handle
             obj.y(:,1) = defPos;
             obj.r(1) = defPos;
         end
-        function obj = setParams(obj,param,type)
-            switch type
-                case 'ki'
-                    obj.ki = param;
-                case 'kp'
-                    obj.kp = param;
-            end
+        function obj = resetControllerState(obj)
+            obj.e(:,1) = 0;
+            obj.u(:,1) = 0;
+            obj.antiWind(:,1) = 0;
+            obj.y(:,1) = 0.5;
+            obj.r(1) = 0.5;
+        end
+        function obj = setParams(obj,ki,kp)
+            obj.ki = ki;
+            obj.kp = kp;
         end
     end
 end

@@ -13,7 +13,7 @@ classdef ImagePeopleDetector < handle
         %Ausgangswerte von Filter
         Xact_filter
         Yact_filter
-        defPos_pan = 0.5; %Rückgabewert, fall keine Person erkannt = ReglerSollwert (für Mittelwertfilter relevant)
+        defPos_pan = 0.5;
         defPos_tilt = 0.5; 
         filtLength = 2; % mind. 3 für LoPass, mind 4 für FIR
     end
@@ -150,11 +150,9 @@ classdef ImagePeopleDetector < handle
                     xact_filt = obj.Xact_raw(1);
                     yact_filt = obj.YactYact_raw(1);
                 case 'mean'
-                    % Var 2: Mittelwert
                     xact_filt = mean(obj.Xact_raw);
                     yact_filt = mean(obj.Yact_raw);
                 case 'hold'
-                       %Hold Filter 
                    if person_detected
                        xact_filt = obj.Xact_raw(1);
                        yact_filt = obj.Yact_raw(1);
@@ -186,12 +184,8 @@ classdef ImagePeopleDetector < handle
         
         function obj = updateDefValues(obj, xDef, yDef)
         %Neuer Reglersollwert
-            %evtl auch auf 0.5 lassen für LowPassFilter
             obj.defPos_pan = xDef;
             obj.defPos_tilt = yDef;
-            %Filter löschen für weichen Start des Reglers?
-            %obj.Xact(:,1) = obj.defPos_pan;
-            %obj.Yact(:,1) = obj.defPos_tilt;
         end
     end
 end
