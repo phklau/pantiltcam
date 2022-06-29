@@ -9,7 +9,9 @@ classdef Controller < handle
         ki
         kp
         kd
+        Tt
         sampleTime
+        antiWind = zeros(2,1);
     end
     
     methods (Access = public)
@@ -18,6 +20,7 @@ classdef Controller < handle
             obj.sampleTime = sampleTime;
             %get ControllerParams
             T_t = 2*sampleTime;
+            obj.Tt = T_t;
             obj.kp = (0.9/K)*(T/T_t);
             obj.ki = obj.kp/(3.33*T_t);
             obj.kd = 0;  
@@ -34,16 +37,18 @@ classdef Controller < handle
             obj.e(2) = obj.e(1);
             obj.u(2) = obj.u(1);
             obj.y(2) = obj.y(1);
+            obj.antiWind(2) = obj.antiWind(1);
             %Neue Istgröße schreiben
             obj.y(1) = yNow;
             %Regelfehler berechnen
             obj.e(1) = obj.r(1) - obj.y(1);
             %Regelgesetz 2DOFPI (bisher nur PI)
-            integralPart = obj.sampleTime*obj.ki*0.5*(obj.e(1)+obj.e(2));
+            integralPart = obj.sampleTime*obj.ki*0.5*(obj.e(1)+obj.e(2)) + obj.antiWind(2)*0.5*obj.sampleTime*(1/obj.Tt);
             propPart = obj.kp*(obj.y(2) - obj.y(1));
             %Saturation
             u_unSaturation = obj.u(2) + integralPart + propPart;
             u_Saturation = min(1, (max(0, u_unSaturation)));
+            obj.antiWind(1) = u_Saturation - u_unSaturation;
             obj.u(1) = u_Saturation;
             output = obj.u(1);
         end
