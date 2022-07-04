@@ -1,6 +1,6 @@
 classdef Controller < handle
     %Klasse für Regler
-    properties (Access = public)
+    properties (Access = private)
         e = zeros(3,1);   %Regelfehler
         u = zeros(3,1);  %Stellgröße
         y = zeros(3,1);  %Instgröße
@@ -13,7 +13,7 @@ classdef Controller < handle
         antiWind = zeros(2,1);
     end
     
-    methods (Access = private)
+    methods (Access = public)
         function obj = Controller(K, T, sampleTime, servoMid)
             %Konstruktor -> Regelparmas initalisieren, Arrays beschreiben
             obj.sampleTime = sampleTime;

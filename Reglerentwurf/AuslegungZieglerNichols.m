@@ -1,12 +1,16 @@
 %Berechnungen der Reglerparameter anhand Methode 2 Ziegler Nichols
 TYPE = 'PI'
 %Prozessparameter
-K = 1.18;
-T = 0.091;
+%Pan Theoretisch
+%K = 1.895;
+%Tilt Theoretisch
+K = 2.5714
+%K = 2.57;
+T = 0.15;
 DT = 0.15;
 s = tf('s');
 %T_t = DT/2; %Mindeste Totzeit, durch diskrete Abtastung
-T_t = DT; %Erfahrungswert aus Sprungantwort
+T_t = 0.4; %Erfahrungswert aus Sprungantwort
 %Prozess ohne Totzeit
 P_s = tf([K], [T 1]);
 %Prozess mit Totzeit
